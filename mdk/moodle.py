@@ -179,11 +179,12 @@ class Moodle(object):
     def cli(self, cli, args='', **kwargs):
         """Executes a command line tool script"""
         cli = os.path.join(self.get('path'), cli.lstrip('/'))
+
         if not os.path.isfile(cli):
             raise Exception('Could not find script to call')
         if type(args) == 'list':
             args = ' '.join(args)
-        cmd = '%s %s %s' % (C.get('php'), cli, args)
+        cmd = '"%s" "%s" %s' % (C.get('php'), cli, args)
         return process(cmd, cwd=self.get('path'), **kwargs)
 
     def currentBranch(self):

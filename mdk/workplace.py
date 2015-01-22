@@ -25,7 +25,7 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import logging
-from .tools import mkdir, process, stableBranch
+from .tools import mkdir, process, stableBranch, symlink
 from .exceptions import CreateException
 from .config import Conf
 from . import git
@@ -99,7 +99,7 @@ class Workplace(object):
                 # The repository is not updated at this stage, it has to be done manually.
             else:
                 logging.info('This is going to take a while...')
-                process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.stable'), cacheStable))
+                process('"%s" clone --mirror %s "%s"' % (C.get('git'), C.get('remotes.stable'), cacheStable))
 
         if not os.path.isdir(cacheIntegration) and integration:
             logging.info('Cloning integration repository into cache...')
@@ -112,7 +112,7 @@ class Workplace(object):
                 # The repository is not updated at this stage, it has to be done manually.
             else:
                 logging.info('Have a break, this operation is slow...')
-                process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.integration'), cacheIntegration))
+                process('"%s" clone --mirror %s "%s"' % (C.get('git'), C.get('remotes.integration'), cacheIntegration))
 
     def create(self, name=None, version='master', integration=False, useCacheAsRemote=False):
         """Creates a new instance of Moodle.
@@ -147,7 +147,7 @@ class Workplace(object):
 
         # Clone the instances
         logging.info('Cloning repository...')
-        process('%s clone %s %s' % (C.get('git'), repository, wwwDir))
+        process('"%s" clone "%s" "%s"' % (C.get('git'), repository, wwwDir))
 
         # Symbolic link
         if os.path.islink(linkDir):
@@ -155,19 +155,19 @@ class Workplace(object):
         if os.path.isfile(linkDir) or os.path.isdir(linkDir):  # No elif!
             logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwDir, linkDir))
         else:
-            os.symlink(wwwDir, linkDir)
+            symlink(wwwDir, linkDir)
 
         # Symlink to extra.
         if os.path.isfile(extraLinkDir) or os.path.isdir(extraLinkDir):
             logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (extraDir, extraLinkDir))
         else:
-            os.symlink(extraDir, extraLinkDir)
+            symlink(extraDir, extraLinkDir)
 
         # Symlink to dataDir in wwwDir
         if type(C.get('symlinkToData')) == str:
             linkDataDir = os.path.join(wwwDir, C.get('symlinkToData'))
             if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
-                os.symlink(dataDir, linkDataDir)
+                symlink(dataDir, linkDataDir)
 
         logging.info('Checking out branch...')
         repo = git.Git(wwwDir, C.get('git'))

@@ -26,6 +26,7 @@ import logging
 import re
 import shlex
 import subprocess
+from sys import path
 
 
 class Git(object):
@@ -190,7 +191,7 @@ class Git(object):
         if path == None:
             path = self.getPath()
 
-        cmd = shlex.split(str('%s log -1') % self.getBin())
+        cmd = shlex.split(str('"%s" log -1') % self.getBin())
         proc = subprocess.Popen(cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

@@ -23,9 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
-import grp
 import re
-import pwd
 import subprocess
 import logging
 
@@ -54,22 +52,31 @@ class InitCommand(Command):
 
     def run(self, args):
 
+        # Detect whether we need to do chown (i.e. not Windows)
+        chownrequired = hasattr(os, 'chown')
+
         # Check what user we want to initialise for.
         while True:
             username = question('What user are you initialising MDK for?', get_current_user())
-            try:
-                user = pwd.getpwnam(username)
-            except:
-                logging.warning('Error while getting information for user %s' % (username))
-                continue
+            if not chownrequired:
+			    break
 
-            try:
-                usergroup = grp.getgrgid(user.pw_gid)
-            except:
-                logging.warning('Error while getting the group of user %s' % (username))
-                continue
+            if chownrequired:
+				import grp
+				import pwd
+				try:
+					user = pwd.getpwnam(username)
+				except:
+					logging.warning('Error while getting information for user %s' % (username))
+					continue
 
-            break
+				try:
+					usergroup = grp.getgrgid(user.pw_gid)
+				except:
+					logging.warning('Error while getting the group of user %s' % (username))
+					continue
+
+				break
 
         # Default directories.
         userdir = self.resolve_directory('~/.moodle-sdk', username)
@@ -79,7 +86,8 @@ class InitCommand(Command):
         if not os.path.isdir(userdir):
             logging.info('Creating directory %s.' % userdir)
             mkdir(userdir, 0755)
-            os.chown(userdir, user.pw_uid, usergroup.gr_gid)
+            if chownrequired:
+                os.chown(userdir, user.pw_uid, usergroup.gr_gid)
 
         # Checking if the config file exists.
         userconfigfile = os.path.join(userdir, 'config.json')
@@ -91,7 +99,8 @@ class InitCommand(Command):
         elif not os.path.isfile(userconfigfile):
             logging.info('Creating user config file in %s.' % userconfigfile)
             open(userconfigfile, 'w')
-            os.chown(userconfigfile, user.pw_uid, usergroup.gr_gid)
+            if chownrequired:
+                os.chown(userconfigfile, user.pw_uid, usergroup.gr_gid)
 
         # Loading the configuration.
         from ..config import Conf as Config
@@ -104,7 +113,8 @@ class InitCommand(Command):
             try:
                 if not os.path.isdir(www):
                     mkdir(www, 0775)
-                    os.chown(www, user.pw_uid, usergroup.gr_gid)
+                    if chownrequired:
+                        os.chown(www, user.pw_uid, usergroup.gr_gid)
             except:
                 logging.error('Error while creating directory %s' % www)
                 continue
@@ -123,7 +133,8 @@ class InitCommand(Command):
                 if not os.path.isdir(storage):
                     if storage != www:
                         mkdir(storage, 0775)
-                        os.chown(storage, user.pw_uid, usergroup.gr_gid)
+                        if chownrequired:
+                            os.chown(storage, user.pw_uid, usergroup.gr_gid)
                     else:
                         logging.error('Error! dirs.www and dirs.storage must be different!')
                         continue
@@ -146,7 +157,8 @@ class InitCommand(Command):
             try:
                 logging.info('Creating MDK directory %s' % mdkdir)
                 mkdir(mdkdir, 0775)
-                os.chown(mdkdir, user.pw_uid, usergroup.gr_gid)
+                if chownrequired:
+                    os.chown(mdkdir, user.pw_uid, usergroup.gr_gid)
             except:
                 logging.error('Error while creating %s, please fix manually.' % mdkdir)
 
