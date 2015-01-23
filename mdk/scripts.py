@@ -146,7 +146,7 @@ class Scripts(object):
             logging.debug('Copying %s to %s' % (cli, dest))
             shutil.copyfile(cli, dest)
 
-            cmd = '%s %s %s' % (C.get('php'), dest, arguments)
+            cmd = '"%s" "%s" %s' % (C.get('php'), dest, arguments)
 
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
@@ -156,7 +156,7 @@ class Scripts(object):
             shutil.copyfile(cli, dest)
             os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
 
-            cmd = '%s %s' % (dest, arguments)
+            cmd = '"%s" %s' % (dest, arguments)
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         else:

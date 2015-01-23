@@ -28,7 +28,7 @@ import time
 import logging
 from distutils.dir_util import copy_tree
 
-from .tools import chmodRecursive, mkdir
+from .tools import chmodRecursive, mkdir, symlink
 from .db import DB
 from .config import Conf
 from .workplace import Workplace
@@ -221,6 +221,6 @@ class Backup(object):
         if os.path.isfile(linkDir) or os.path.isdir(linkDir):  # No elif!
             logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwDir, linkDir))
         else:
-            os.symlink(wwwDir, linkDir)
+            symlink(wwwDir, linkDir)
 
         return M

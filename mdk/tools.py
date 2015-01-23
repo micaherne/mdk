@@ -88,7 +88,6 @@ def getMDLFromCommitMessage(message):
 def get_current_user():
     """Attempt to get the currently logged in user"""
     username = 'root'
-    return 'michael'
     try:
         username = os.getlogin()
     except OSError:
@@ -191,6 +190,8 @@ def stableBranch(version):
         return 'master'
     return 'MOODLE_%d_STABLE' % int(version)
 
+# Windows symlink functionality nicked from
+# http://stackoverflow.com/questions/6260149/os-symlink-support-in-windows
 __CSL = None
 def symlink(wwwDir, linkDir):
     import os
